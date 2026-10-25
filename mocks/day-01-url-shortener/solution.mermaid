@@ -1,0 +1,10 @@
+flowchart LR
+  C[Clients] --> LB[Load balancer / API gateway<br/>rate limiting]
+  LB -->|POST /urls| W[Write service]
+  LB -->|GET /code| R[Redirect service]
+  W -->|ID block of 1M| Z[(ZooKeeper / DB sequence)]
+  W -->|code = base62 counter| DB[(KV store<br/>Cassandra / DynamoDB<br/>PK = short_code)]
+  R -->|cache-aside| RC[(Redis cache)]
+  RC -->|miss| DB
+  R -->|click event| K[[Kafka]]
+  K --> A[Analytics workers] --> AD[(Analytics store)]
